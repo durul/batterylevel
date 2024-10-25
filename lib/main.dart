@@ -16,6 +16,13 @@ class _PlatformChannelState extends State<PlatformChannel> {
   // Initialize the battery level and charging status.
   String _batteryLevel = 'Battery level: unknown.';
   String _chargingStatus = 'Battery status: unknown.';
+  final Stream<dynamic> _stream = kEventChannel.receiveBroadcastStream();
+
+  @override
+  void initState() {
+    super.initState();
+    _getBatteryLevel();
+  }
 
   // Get the battery level.
   Future<void> _getBatteryLevel() async {
@@ -36,21 +43,12 @@ class _PlatformChannelState extends State<PlatformChannel> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
+  Stream<dynamic> streamTimeFromNative() {
     // Listen to charging status changes
-    kEventChannel.receiveBroadcastStream().listen(_onEvent, onError: _onError);
+    return kEventChannel.receiveBroadcastStream();
   }
 
-  void _onEvent(Object? event) {
-    setState(() {
-      _chargingStatus =
-          "Battery status: ${event == 'charging' ? '' : 'dis'}charging.";
-    });
-  }
-
-  void _onError(Object error) {
+  void _onError(Object? error) {
     setState(() {
       _chargingStatus = 'Battery status: unknown.';
     });
@@ -75,7 +73,23 @@ class _PlatformChannelState extends State<PlatformChannel> {
               ),
             ],
           ),
-          Text(_chargingStatus),
+          StreamBuilder<dynamic>(
+              stream: streamTimeFromNative(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (snapshot.hasError) {
+                  // Handle error case
+                  _onError(snapshot.error);
+                }
+
+                if (snapshot.hasData) {
+                  return Text(
+                    '${snapshot.data}',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  );
+                } else {
+                  return const Text('No data');
+                }
+              })
         ],
       ),
     );
