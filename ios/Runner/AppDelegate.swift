@@ -50,7 +50,7 @@ import UIKit
         let device = UIDevice.current
         device.isBatteryMonitoringEnabled = true
         if device.batteryState == UIDevice.BatteryState.unknown {
-            result(FlutterError(code: "UNAVAILABLE",
+            result(FlutterError(code: MyFlutterErrorCode.unavailable,
                                 message: "Battery level not available.",
                                 details: nil))
         } else {
@@ -71,18 +71,18 @@ import UIKit
 
         switch batteryState {
         case .charging, .full:
-            eventSink("charging")
+            eventSink(BatteryState.charging)
         case .unplugged:
-            eventSink("discharging")
+            eventSink(BatteryState.disscharging)
         case .unknown:
             eventSink(FlutterError(
-                code: "UNAVAILABLE",
+                code: MyFlutterErrorCode.unavailable,
                 message: "Charging status unavailable",
                 details: nil
             ))
         @unknown default:
             eventSink(FlutterError(
-                code: "UNAVAILABLE",
+                code: MyFlutterErrorCode.unavailable,
                 message: "Charging status unavailable",
                 details: nil
             ))
