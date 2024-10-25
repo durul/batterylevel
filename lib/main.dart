@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'constants.dart';
+
 class PlatformChannel extends StatefulWidget {
   const PlatformChannel({super.key});
 
@@ -11,14 +13,6 @@ class PlatformChannel extends StatefulWidget {
 }
 
 class _PlatformChannelState extends State<PlatformChannel> {
-  // Construct a MethodChannel with the specified name.
-  static const MethodChannel methodChannel =
-      MethodChannel('samples.flutter.io/battery');
-
-  // Construct an EventChannel with the specified name.
-  static const EventChannel eventChannel =
-      EventChannel('samples.flutter.io/charging');
-
   // Initialize the battery level and charging status.
   String _batteryLevel = 'Battery level: unknown.';
   String _chargingStatus = 'Battery status: unknown.';
@@ -28,7 +22,7 @@ class _PlatformChannelState extends State<PlatformChannel> {
     String batteryLevel;
     try {
       // specifying the concrete method to call using the String identifier getBatteryLevel.
-      final int? result = await methodChannel.invokeMethod('getBatteryLevel');
+      final int? result = await kMethodChannel.invokeMethod('getBatteryLevel');
       batteryLevel = 'Battery level: $result%.';
     } on PlatformException catch (e) {
       if (e.code == 'NO_BATTERY') {
@@ -45,7 +39,16 @@ class _PlatformChannelState extends State<PlatformChannel> {
   @override
   void initState() {
     super.initState();
-    eventChannel.receiveBroadcastStream().listen(_onEvent, onError: _onError);
+    // Listen to charging status changes
+    kEventChannel.receiveBroadcastStream().listen((dynamic event) {
+      setState(() {
+        _chargingStatus = "Charging status: $event";
+      });
+    }, onError: (dynamic error) {
+      setState(() {
+        _chargingStatus = "Charging status: unknown.";
+      });
+    });
   }
 
   void _onEvent(Object? event) {
