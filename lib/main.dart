@@ -40,15 +40,7 @@ class _PlatformChannelState extends State<PlatformChannel> {
   void initState() {
     super.initState();
     // Listen to charging status changes
-    kEventChannel.receiveBroadcastStream().listen((dynamic event) {
-      setState(() {
-        _chargingStatus = "Charging status: $event";
-      });
-    }, onError: (dynamic error) {
-      setState(() {
-        _chargingStatus = "Charging status: unknown.";
-      });
-    });
+    kEventChannel.receiveBroadcastStream().listen(_onEvent, onError: _onError);
   }
 
   void _onEvent(Object? event) {

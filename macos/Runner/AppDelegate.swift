@@ -13,16 +13,13 @@ class AppDelegate: FlutterAppDelegate, FlutterStreamHandler {
     private static var sharedDelegate: AppDelegate?
 
     // Store the run loop source as a property to prevent deallocation
-
     private static let powerSourceCallback: IOPowerSourceCallbackType = { _ in
         sharedDelegate?.sendBatteryStateEvent()
     }
 
     override func applicationWillFinishLaunching(_ notification: Notification) {
-        super.applicationWillFinishLaunching(notification)
-
         guard let controller = mainFlutterWindow?.contentViewController as? FlutterViewController else {
-            return
+            return super.applicationWillFinishLaunching(notification)
         }
 
         // Setup Battery Method Channel

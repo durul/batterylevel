@@ -3,6 +3,7 @@ import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterStreamHandler {
+    // FlutterEventSink
     private var eventSink: FlutterEventSink?
 
     // FlutterResult is a type alias for a closure that takes an optional Any argument and returns void.
@@ -11,8 +12,8 @@ import UIKit
     override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         GeneratedPluginRegistrant.register(with: self)
 
-        // If the guard statement fails (meaning we couldn't get a FlutterViewController), we:
-        // Call the superclass's implementation of application(_:didFinishLaunchingWithOptions:) and return its result.
+        // If the guard statement fails (meaning we couldn't get a FlutterViewController),
+        // We call the superclass's implementation of application(_:didFinishLaunchingWithOptions:)
         guard let controller = window?.rootViewController as? FlutterViewController else {
             return super.application(application, didFinishLaunchingWithOptions: launchOptions)
         }
