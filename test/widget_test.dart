@@ -7,24 +7,36 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:flutter_driver/flutter_driver.dart';
 import 'package:batterylevel/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('button tap test', () {
+    late FlutterDriver driver;
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    setUpAll(() async {
+      driver = await FlutterDriver.connect();
+    });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    tearDownAll(() async {
+      driver.close();
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('tap on the button, verify result', () async {
+      final SerializableFinder batteryLevelLabel =
+      find.byValueKey('Battery level label');
+      expect(batteryLevelLabel, isNotNull);
+
+      final SerializableFinder button = find.text('Refresh');
+      await driver.waitFor(button);
+      await driver.tap(button);
+
+      String? batteryLevel;
+      while (batteryLevel == null || batteryLevel.contains('unknown')) {
+        batteryLevel = await driver.getText(batteryLevelLabel);
+      }
+
+      expect(batteryLevel.contains('%'), isTrue);
+    });
   });
 }
