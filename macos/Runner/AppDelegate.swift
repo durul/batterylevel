@@ -5,20 +5,20 @@ import IOKit.ps
 @main
 class AppDelegate: FlutterAppDelegate {
     private var eventSink: FlutterEventSink?
-    
-    override func applicationDidFinishLaunching(_ aNotification: Notification) {
-        super.applicationDidFinishLaunching(aNotification)
-        
+
+    override func applicationWillFinishLaunching(_ notification: Notification) {
+        super.applicationWillFinishLaunching(notification)
+
         guard let controller = mainFlutterWindow?.contentViewController as? FlutterViewController else {
             return
         }
-        
+
         // Setup Battery Method Channel
         let batteryChannel = FlutterMethodChannel(
             name: "samples.flutter.io/battery",
             binaryMessenger: controller.engine.binaryMessenger
         )
-        
+
         batteryChannel.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) in
             switch call.method {
             case "getBatteryLevel":
@@ -28,7 +28,7 @@ class AppDelegate: FlutterAppDelegate {
             }
         }
     }
-    
+
     override func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
     }
@@ -36,7 +36,7 @@ class AppDelegate: FlutterAppDelegate {
     override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return true
     }
-    
+
     private func receiveBatteryLevel(result: @escaping FlutterResult) {
         if let powerSource = getPowerSourceInfo() {
             if let currentCapacity = powerSource["Current Capacity"] as? Int {
@@ -44,21 +44,40 @@ class AppDelegate: FlutterAppDelegate {
                 return
             }
         }
-        
+
         result(FlutterError(
             code: "UNAVAILABLE",
             message: "Battery level not available.",
             details: nil
         ))
     }
-    
+
     private func getPowerSourceInfo() -> [String: Any]? {
         let snapshot = IOPSCopyPowerSourcesInfo().takeRetainedValue()
         let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as [CFTypeRef]
-        
+
         if let source = sources.first {
             return IOPSGetPowerSourceDescription(snapshot, source).takeUnretainedValue() as? [String: Any]
         }
         return nil
+    }
+
+    // MARK: - Battery State Handling
+
+    private func sendBatteryStateEvent() {
+        guard let eventSink = eventSink else { return }
+
+        if let powerSource = getPowerSourceInfo() {
+            if let isCharging = powerSource["Is Charging"] as? Bool {
+                eventSink(isCharging ? "charging" : "discharging")
+                return
+            }
+        }
+
+        eventSink(FlutterError(
+            code: "UNAVAILABLE",
+            message: "Charging status unavailable",
+            details: nil
+        ))
     }
 }
