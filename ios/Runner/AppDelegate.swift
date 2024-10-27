@@ -18,22 +18,8 @@ import UIKit
             return super.application(application, didFinishLaunchingWithOptions: launchOptions)
         }
 
-        // Setup Battery Method Channel
-        let batteryChannel = FlutterMethodChannel(
-            name: "samples.flutter.io/battery",
-            binaryMessenger: controller.binaryMessenger
-        )
-
-        //  Flutter side calls "getBatteryLevel" on the method channel, execute the receiveBatteryLevel() in this class.
-        batteryChannel.setMethodCallHandler { [weak self] call, result in
-            self?.flutterResult = result
-            switch call.method {
-            case "getBatteryLevel":
-                self?.receiveBatteryLevel(result: result)
-            default:
-                result(FlutterMethodNotImplemented)
-            }
-        }
+        // Setup Battery Service
+        BatteryService.shared.setup(controller: controller)
 
         // Setup Charging Event Channel
         let chargingChannel = FlutterEventChannel(
@@ -43,20 +29,6 @@ import UIKit
         chargingChannel.setStreamHandler(self)
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    }
-
-    // MARK: - Battery Level Handling with Method Channel
-
-    private func receiveBatteryLevel(result: FlutterResult) {
-        let device = UIDevice.current
-        device.isBatteryMonitoringEnabled = true
-        if device.batteryState == UIDevice.BatteryState.unknown {
-            result(FlutterError(code: MyFlutterErrorCode.unavailable,
-                                message: "Battery level not available.",
-                                details: nil))
-        } else {
-            result(Int(device.batteryLevel * 100))
-        }
     }
 
     // MARK: - Battery State Handling with Event Channel
