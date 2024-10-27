@@ -15,8 +15,6 @@ class PlatformChannel extends StatefulWidget {
 class _PlatformChannelState extends State<PlatformChannel> {
   // Initialize the battery level and charging status.
   String _batteryLevel = 'Battery level: unknown.';
-  String _chargingStatus = 'Battery status: unknown.';
-  final Stream<dynamic> _stream = kEventChannel.receiveBroadcastStream();
 
   @override
   void initState() {
@@ -48,12 +46,6 @@ class _PlatformChannelState extends State<PlatformChannel> {
     return kEventChannel.receiveBroadcastStream();
   }
 
-  void _onError(Object? error) {
-    setState(() {
-      _chargingStatus = 'Battery status: unknown.';
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -77,8 +69,10 @@ class _PlatformChannelState extends State<PlatformChannel> {
               stream: streamTimeFromNative(),
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 if (snapshot.hasError) {
-                  // Handle error case
-                  _onError(snapshot.error);
+                  return Text(
+                    'Battery status: unknown.',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  );
                 }
 
                 if (snapshot.hasData) {

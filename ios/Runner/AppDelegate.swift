@@ -45,7 +45,7 @@ import UIKit
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
-    // MARK: - Battery Level Handling
+    // MARK: - Battery Level Handling with Method Channel
 
     private func receiveBatteryLevel(result: FlutterResult) {
         let device = UIDevice.current
@@ -59,7 +59,7 @@ import UIKit
         }
     }
 
-    // MARK: - Battery State Handling
+    // MARK: - Battery State Handling with Event Channel
 
     @objc private func onBatteryStateDidChange(_ notification: Notification) {
         sendBatteryStateEvent()
@@ -74,7 +74,7 @@ import UIKit
         case .charging, .full:
             eventSink(BatteryState.charging)
         case .unplugged:
-            eventSink(BatteryState.disscharging)
+            eventSink(BatteryState.discharging)
         case .unknown:
             eventSink(FlutterError(
                 code: MyFlutterErrorCode.unavailable,
