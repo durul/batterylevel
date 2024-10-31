@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-import 'constants.dart';
+import 'EventChannelBattery.dart';
 
 class PlatformChannel extends StatefulWidget {
   const PlatformChannel({super.key});
@@ -24,26 +23,10 @@ class _PlatformChannelState extends State<PlatformChannel> {
 
   // Get the battery level.
   Future<void> _getBatteryLevel() async {
-    String batteryLevel;
-    try {
-      // specifying the concrete method to call using the String identifier getBatteryLevel.
-      final int? result = await kMethodChannel.invokeMethod('getBatteryLevel');
-      batteryLevel = 'Battery level: $result%.';
-    } on PlatformException catch (e) {
-      if (e.code == 'NO_BATTERY') {
-        batteryLevel = 'No battery.';
-      } else {
-        batteryLevel = 'Failed to get battery level.';
-      }
-    }
+    String batteryLevel = await EventChannelBatteryLevel.getBatteryLevel();
     setState(() {
       _batteryLevel = batteryLevel;
     });
-  }
-
-  Stream<dynamic> streamTimeFromNative() {
-    // Listen to charging status changes
-    return kEventChannel.receiveBroadcastStream();
   }
 
   @override
@@ -66,7 +49,7 @@ class _PlatformChannelState extends State<PlatformChannel> {
             ],
           ),
           StreamBuilder<dynamic>(
-              stream: streamTimeFromNative(),
+              stream: EventChannelBatteryLevel.batteryLevel,
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 if (snapshot.hasError) {
                   return Text(
